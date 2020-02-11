@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OptionsPattern.configuration;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace OptionsPattern
 {
@@ -10,26 +12,29 @@ namespace OptionsPattern
     {
         private static IServiceProvider _serviceProvider;
 
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            IConfiguration Configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .AddCommandLine(args)
-                .Build();
-
-            RegisterServices(Configuration);
-
+            RegisterServices(args);
+            await _serviceProvider.GetService<App>().Run();
             DisposeServices();
         }
 
-        private static void RegisterServices(IConfiguration configuration)
+        private static void RegisterServices(string[] args)
         {
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.Configure<LoggingConfig>(configuration.GetSection(""));
             
+            var services = new ServiceCollection();
+            services.AddLogging(builder => builder
+                                            .AddDebug()
+                                            .AddConsole());
+            services.AddOptions();
+
+            var loggingConfig = configuration.GetSection("LoggingConfig").Get<LoggingConfig>();
+            services.AddSingleton(loggingConfig);
+            
+
+
+                            
+
             _serviceProvider = services.BuildServiceProvider(true);
         }
 
