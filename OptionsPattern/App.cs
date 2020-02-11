@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OptionsPattern.configuration;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using OptionsPattern.configuration;
 
 namespace OptionsPattern
 {
@@ -21,11 +21,11 @@ namespace OptionsPattern
 
         public async Task Run()
         {
-            Console.WriteLine();
-            Console.WriteLine("Hello world!");
-            Console.WriteLine();
+            _logger.LogInformation("this is the information message");
+            _logger.LogDebug("this is the debug message");
+            
             Console.WriteLine(_appConfig.AppName);
-            Console.WriteLine();
+           
             await Task.CompletedTask;
         }
     }

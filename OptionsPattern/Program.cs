@@ -24,17 +24,19 @@ namespace OptionsPattern
             
             var services = new ServiceCollection();
             services.AddLogging(builder => builder
-                                            .AddDebug()
-                                            .AddConsole());
+                                           .AddConsole());
+
+            IConfiguration Configuration = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+               .AddEnvironmentVariables()
+               .AddCommandLine(args)
+               .Build();
+
             services.AddOptions();
 
-            var loggingConfig = configuration.GetSection("LoggingConfig").Get<LoggingConfig>();
-            services.AddSingleton(loggingConfig);
-            
-
-
-                            
-
+            services.Configure<AppConfig>(Configuration.GetSection("AppConfig"));
+            services.AddTransient<App>();
             _serviceProvider = services.BuildServiceProvider(true);
         }
 
