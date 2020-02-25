@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Amazon.S3;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OptionsPattern.configuration;
@@ -19,24 +20,30 @@ namespace OptionsPattern
             DisposeServices();
         }
 
-        private static void RegisterServices(string[] args)
+        private static async void RegisterServices(string[] args)
         {
             
             var services = new ServiceCollection();
             services.AddLogging(builder => builder
                                            .AddConsole());
+            var EnvironmentType = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
 
+            
             IConfiguration Configuration = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+               .AddJsonFile($"appsettings.{EnvironmentType}.json", optional: true, reloadOnChange: true)
                .AddEnvironmentVariables()
                .AddCommandLine(args)
                .Build();
 
-            services.AddOptions();
-
+            
             services.Configure<AppConfig>(Configuration.GetSection("AppConfig"));
+            services.AddDefaultAWSOptions(Configuration.GetAWSOptions());          
+
             services.AddTransient<App>();
+            
+            services.AddAWSService<IAmazonS3>();
             _serviceProvider = services.BuildServiceProvider(true);
         }
 
